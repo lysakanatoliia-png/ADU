@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ADU Materials Estimate · 311 Lexington Drive · Menlo Park</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FAFAF9;
+    --surface: #FFFFFF;
+    --border: #E5E7EB;
+    --text: #111827;
+    --text-muted: #6B7280;
+    --accent: #059669;
+    --accent-soft: rgba(5, 150, 105, 0.12);
+    --accent-strong: rgba(5, 150, 105, 0.45);
+  }
+  html, body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+  .zone-polygon {
+    fill: rgba(5, 150, 105, 0.06);
+    stroke: rgba(5, 150, 105, 0.4);
+    stroke-width: 2;
+    stroke-dasharray: 4 4;
+    cursor: pointer;
+    transition: fill 0.2s ease, stroke 0.2s ease;
+  }
+  .zone-polygon:hover {
+    fill: var(--accent-soft);
+    stroke: var(--accent);
+    stroke-dasharray: none;
+  }
+  .zone-polygon.active {
+    fill: var(--accent-strong);
+    stroke: var(--accent);
+    stroke-width: 3;
+    stroke-dasharray: none;
+  }
+  .zone-label {
+    pointer-events: none;
+    font-size: 18px;
+    font-weight: 700;
+    fill: #064E3B;
+    text-shadow: 0 1px 3px rgba(255,255,255,0.95), 0 0 8px rgba(255,255,255,0.7);
+  }
+  .zone-cost {
+    pointer-events: none;
+    font-size: 15px;
+    font-weight: 600;
+    fill: #047857;
+    text-shadow: 0 1px 2px rgba(255,255,255,0.9);
+  }
+  .phase-card {
+    transition: all 0.15s ease;
+    cursor: pointer;
+  }
+  .phase-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  }
+  .stat-pill {
+    background: var(--surface);
+    border: 1px solid var(--border);
+  }
+  .scrollbar-thin::-webkit-scrollbar { width: 6px; }
+  .scrollbar-thin::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 3px; }
+  .plan-container { position: relative; width: 100%; aspect-ratio: 1536 / 1024; }
+  .plan-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+  .plan-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+  /* Mobile-specific tweaks (iPhone 14/15/17: 390-430 CSS px) */
+  @media (max-width: 640px) {
+    .zone-label { font-size: 24px; }
+    .zone-cost { font-size: 19px; }
+    /* Make tap targets larger via touch-action */
+    .zone-polygon { stroke-width: 3; }
+  }
+  @media (max-width: 430px) {
+    .zone-label { font-size: 28px; }
+    .zone-cost { font-size: 22px; }
+  }
+
+  /* Mobile-friendly tap states (touch devices: hover→tap) */
+  @media (hover: none) {
+    .zone-polygon { fill: rgba(5, 150, 105, 0.12); stroke-dasharray: none; }
+  }
+</style>
+</head>
+<body class="min-h-screen">
+
+<!-- =================== HEADER =================== -->
+<header class="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-gray-200">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-3">
+    <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+      <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold text-base sm:text-lg shrink-0">A</div>
+      <div class="min-w-0">
+        <h1 class="text-base sm:text-lg font-bold leading-tight truncate">ADU Materials Estimate</h1>
+        <p class="text-[10px] sm:text-xs text-gray-500 truncate">Menlo Park · 311 Lexington Drive · CA 94025</p>
+      </div>
+    </div>
+    <div class="text-right shrink-0">
+      <div class="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider">Grand Total</div>
+      <div class="text-xl sm:text-2xl font-bold text-emerald-600 mono leading-tight">$43,833</div>
+      <div class="text-[10px] sm:text-xs text-gray-400">315 sq ft · $139/sf</div>
+    </div>
+  </div>
+</header>
+
+<!-- =================== STATS BAR =================== -->
+<section class="max-w-7xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6">
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+    <div class="stat-pill rounded-lg p-3 sm:p-4">
+      <div class="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider">Floor area</div>
+      <div class="text-base sm:text-xl font-bold mono">315 <span class="text-xs sm:text-sm text-gray-500">sq ft</span></div>
+      <div class="text-[10px] sm:text-xs text-gray-400 mt-0.5 sm:mt-1">15' × 21'</div>
+    </div>
+    <div class="stat-pill rounded-lg p-3 sm:p-4">
+      <div class="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider">Items</div>
+      <div class="text-base sm:text-xl font-bold mono">474</div>
+      <div class="text-[10px] sm:text-xs text-gray-400 mt-0.5 sm:mt-1">across 17 phases</div>
+    </div>
+    <div class="stat-pill rounded-lg p-3 sm:p-4">
+      <div class="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider">Special Orders</div>
+      <div class="text-base sm:text-xl font-bold mono">$10,350</div>
+      <div class="text-[10px] sm:text-xs text-gray-400 mt-0.5 sm:mt-1">6 items · 4–12 wk lead</div>
+    </div>
+    <div class="stat-pill rounded-lg p-3 sm:p-4">
+      <div class="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider">Materials + Tax</div>
+      <div class="text-base sm:text-xl font-bold mono">$47,932</div>
+      <div class="text-[10px] sm:text-xs text-gray-400 mt-0.5 sm:mt-1">+ 9.375% CA reference</div>
+    </div>
+  </div>
+</section>
+
+<!-- =================== MAIN: PLAN + SIDE PANEL =================== -->
+<main class="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6 grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-6">
+
+  <!-- INTERACTIVE PLAN -->
+  <section class="lg:col-span-3 bg-white rounded-xl border border-gray-200 p-3 sm:p-5 shadow-sm">
+    <div class="flex items-center justify-between mb-3 sm:mb-4 gap-2">
+      <div class="min-w-0">
+        <h2 class="font-semibold text-sm sm:text-base">Floor Plan · Functional Zones</h2>
+        <p class="text-[11px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">Tap a zone to see breakdown.</p>
+      </div>
+      <button id="toggle-zones" class="text-[11px] sm:text-xs px-2.5 sm:px-3 py-1 sm:py-1.5 rounded border border-gray-200 hover:border-emerald-500 hover:bg-emerald-50 transition shrink-0">
+        Hide zones
+      </button>
+    </div>
+
+    <div class="plan-container border border-gray-100 rounded-lg overflow-hidden bg-gray-50">
+      <img src="adu_plan_en.svg" alt="ADU Floor Plan" class="plan-img">
+      <svg class="plan-svg" viewBox="0 0 1536 1024" preserveAspectRatio="none">
+
+        <!-- BATHROOM -->
+        <polygon class="zone-polygon" data-zone="bathroom"
+                 points="243,87 439,90 439,357 241,368"></polygon>
+        <text x="340" y="215" class="zone-label" text-anchor="middle">Bathroom</text>
+        <text x="340" y="240" class="zone-cost" text-anchor="middle">$2,895</text>
+
+        <!-- LAUNDRY (small) -->
+        <polygon class="zone-polygon" data-zone="laundry"
+                 points="292,316 243,314 295,364 241,371"></polygon>
+        <text x="268" y="345" class="zone-cost" text-anchor="middle" style="font-size:11px">Laundry $2,545</text>
+
+        <!-- WALK-IN CLOSET -->
+        <polygon class="zone-polygon" data-zone="closet"
+                 points="455,90 639,94 632,371 457,364"></polygon>
+        <text x="546" y="220" class="zone-label" text-anchor="middle">Walk-in</text>
+        <text x="546" y="245" class="zone-cost" text-anchor="middle">$637</text>
+
+        <!-- BEDROOM -->
+        <polygon class="zone-polygon" data-zone="bedroom"
+                 points="646,90 1047,92 1047,423 648,427"></polygon>
+        <text x="846" y="250" class="zone-label" text-anchor="middle">Bedroom</text>
+        <text x="846" y="275" class="zone-cost" text-anchor="middle">$1,450</text>
+
+        <!-- KITCHEN -->
+        <polygon class="zone-polygon" data-zone="kitchen"
+                 points="299,390 241,387 233,834 307,829"></polygon>
+        <text x="270" y="600" class="zone-label" text-anchor="middle">Kitchen</text>
+        <text x="270" y="625" class="zone-cost" text-anchor="middle">$5,145</text>
+
+        <!-- DINING -->
+        <polygon class="zone-polygon" data-zone="dining"
+                 points="311,385 630,390 618,827 314,829"></polygon>
+        <text x="468" y="600" class="zone-label" text-anchor="middle">Dining</text>
+        <text x="468" y="625" class="zone-cost" text-anchor="middle">$360</text>
+
+        <!-- LIVING ROOM -->
+        <polygon class="zone-polygon" data-zone="living"
+                 points="632,444 1045,439 1045,829 625,829"></polygon>
+        <text x="835" y="635" class="zone-label" text-anchor="middle">Living Room</text>
+        <text x="835" y="660" class="zone-cost" text-anchor="middle">$1,850</text>
+      </svg>
+    </div>
+
+    <!-- Legend -->
+    <div class="mt-4 flex flex-wrap gap-4 text-xs">
+      <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-emerald-500/50 border border-emerald-600"></span>active zone</span>
+      <span class="inline-flex items-center gap-1.5 text-gray-500"><span class="w-3 h-3 rounded bg-emerald-500/10 border border-emerald-400" style="border-style:dashed"></span>hover to highlight</span>
+    </div>
+  </section>
+
+  <!-- SIDE PANEL -->
+  <aside class="lg:col-span-2 bg-white rounded-xl border border-gray-200 p-4 sm:p-5 shadow-sm">
+    <div id="side-panel">
+      <!-- Default state -->
+      <div class="text-center py-12" id="empty-state">
+        <div class="w-16 h-16 mx-auto rounded-full bg-emerald-50 flex items-center justify-center mb-4">
+          <svg class="w-8 h-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+        </div>
+        <h3 class="font-semibold text-gray-700">Select a zone</h3>
+        <p class="text-sm text-gray-500 mt-2 max-w-xs mx-auto">Click any zone on the floor plan to view its materials breakdown and total cost.</p>
+      </div>
+
+      <!-- Zone details (populated by JS) -->
+      <div id="zone-details" class="hidden">
+        <div class="flex items-start justify-between mb-1">
+          <div>
+            <div class="text-xs uppercase tracking-wider text-emerald-600 font-semibold" id="zone-tag">Zone</div>
+            <h3 class="text-2xl font-bold mt-1" id="zone-name">Kitchen</h3>
+            <p class="text-xs text-gray-500 mt-1" id="zone-desc">Compact one-wall layout</p>
+          </div>
+          <div class="text-right">
+            <div class="text-3xl font-bold text-emerald-600 mono" id="zone-cost">$5,145</div>
+            <div class="text-xs text-gray-500 mt-1" id="zone-items-count">17 items</div>
+          </div>
+        </div>
+
+        <div class="my-4 border-t border-gray-100"></div>
+
+        <div class="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-2">Items breakdown</div>
+        <div id="zone-items" class="space-y-1.5 max-h-96 overflow-y-auto scrollbar-thin pr-1">
+          <!-- populated -->
+        </div>
+
+        <div class="my-4 border-t border-gray-100"></div>
+
+        <div class="text-xs text-gray-500" id="zone-notes"></div>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<!-- =================== PHASES BREAKDOWN =================== -->
+<section class="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
+  <div class="flex items-center justify-between mb-3 sm:mb-4 gap-2">
+    <div class="min-w-0">
+      <h2 class="text-base sm:text-xl font-bold">Construction Phases · 17 phases</h2>
+      <p class="text-[11px] sm:text-sm text-gray-500 mt-0.5 sm:mt-1">Shell-to-finish construction sequence</p>
+    </div>
+    <div class="text-xs text-gray-500 hidden md:block">Color-coded by stage</div>
+  </div>
+
+  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2 sm:gap-3" id="phases-grid">
+    <!-- Populated by JS -->
+  </div>
+
+  <!-- Stage legend -->
+  <div class="mt-4 flex flex-wrap gap-4 text-xs text-gray-600">
+    <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>Shell · Phases 1–4</span>
+    <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>MEP · Phases 5–7</span>
+    <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-orange-500"></span>Envelope · Phases 8–11</span>
+    <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>Finish + Equipment · Phases 12–17</span>
+  </div>
+</section>
+
+<!-- =================== REFERENCES + OUT-OF-SCOPE =================== -->
+<section class="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6 grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+  <div class="bg-emerald-50 rounded-xl border border-emerald-200 p-5">
+    <h3 class="font-semibold text-emerald-900 mb-3 flex items-center gap-2">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+      Reference totals
+    </h3>
+    <table class="w-full text-sm">
+      <tr><td class="py-1.5 text-gray-700">Grand Total (materials)</td><td class="py-1.5 text-right font-bold mono">$43,833</td></tr>
+      <tr><td class="py-1.5 text-gray-700">+ CA Sales Tax 9.375%</td><td class="py-1.5 text-right mono">$4,109</td></tr>
+      <tr class="border-t border-emerald-200"><td class="py-1.5 text-gray-900 font-medium">Materials + Tax</td><td class="py-1.5 text-right font-bold mono text-emerald-700">$47,942</td></tr>
+      <tr><td class="py-1.5 text-gray-700">+ 15% material buffer</td><td class="py-1.5 text-right mono">$6,575</td></tr>
+      <tr class="border-t border-emerald-200"><td class="py-1.5 text-gray-900 font-medium">Planning budget</td><td class="py-1.5 text-right font-bold mono text-emerald-800">$54,517</td></tr>
+    </table>
+  </div>
+
+  <div class="bg-gray-50 rounded-xl border border-gray-200 p-5">
+    <h3 class="font-semibold text-gray-700 mb-3 flex items-center gap-2">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+      Out of scope (per spec §32)
+    </h3>
+    <ul class="text-sm text-gray-600 space-y-1.5">
+      <li>• Labor / installation pricing</li>
+      <li>• Permits + plan check + inspections</li>
+      <li>• Architectural / engineering / Title 24</li>
+      <li>• Demolition + trenching labor</li>
+      <li>• Contractor markup + contingency</li>
+      <li>• Delivery / shipping / disposal fees</li>
+    </ul>
+    <p class="text-xs text-gray-500 mt-3 pt-3 border-t border-gray-200">
+      All-in project with labor: ~<span class="font-semibold mono">$90,000 – $115,000</span>
+    </p>
+  </div>
+</section>
+
+<!-- =================== FOOTER =================== -->
+<footer class="max-w-7xl mx-auto px-4 sm:px-6 py-6 text-center text-[11px] sm:text-xs text-gray-400 border-t border-gray-200">
+  Generated from <span class="mono">ADU_Materials_Estimate.xlsx</span> · 474 items across 17 phases<br class="sm:hidden">
+  <span class="hidden sm:inline"> · </span>ADU Menlo Park 94025 · 311 Lexington Drive
+</footer>
+
+<script>
+// ========== DATA ==========
+const ZONES = {
+  kitchen: {
+    name: 'Kitchen',
+    tag: '🍳 Kitchen Zone',
+    desc: 'IKEA SEKTION one-wall · 8\'6" × 12\'6"',
+    cost: 5145,
+    items: [
+      ['IKEA SEKTION base cabinets (8.5 LF)', 425],
+      ['IKEA SEKTION wall cabinets (8.5 LF)', 298],
+      ['Tall pantry cabinet', 200],
+      ['Cabinet doors (METOD / AXSTAD)', 400],
+      ['Drawer fronts', 240],
+      ['Countertop — KARLBY butcher block', 247],
+      ['Backsplash subway tile + adhesive', 150],
+      ['Kitchen sink — HILLESJÖN', 175],
+      ['Kitchen faucet — ÄLMAREN', 110],
+      ['Under-cabinet LED lighting', 80],
+      ['Refrigerator 24" — Frigidaire', 500],
+      ['Electric range 24"', 650],
+      ['Dishwasher 24" — Bosch 100', 600],
+      ['Microwave / hood combo (OTR)', 300],
+      ['Cabinet hardware (hinges, slides, legs)', 105],
+      ['Toe-kick + cover / filler panels', 166],
+      ['Handles + suspension rail', 86],
+      ['Range hood ductwork + cap + adapter', 70],
+      ['Dishwasher install kit + air gap', 55],
+      ['Range power cord + fridge water line', 55],
+      ['Sink plumbing kit + dishwasher mount', 50],
+      ['Backsplash trim, spacers, sponge', 45],
+      ['Caulk, sealer, end caps', 48],
+    ],
+    notes: 'Includes Phase 12 cabinets + Phase 16 kitchen appliances + Phase 5 kitchen plumbing. Garbage disposal $180 — optional, not in baseline.'
+  },
+  bedroom: {
+    name: 'Bedroom',
+    tag: '🛏️ Bedroom Zone',
+    desc: '8\'6" × 11\' · folding partition to living',
+    cost: 1450,
+    items: [
+      ['IKEA MALM Full bed + LÖNSET slats', 329],
+      ['Full mattress — HÖVÅG / MORGEDAL', 250],
+      ['MALM 2-drawer nightstands × 2', 160],
+      ['MALM 4-drawer dresser', 179],
+      ['NYFORS bedside lamps × 2', 60],
+      ['RITVA curtain pair (window)', 35],
+      ['Bedroom finish share (paint + drywall)', 200],
+      ['Mattress protector + bedding', 60],
+      ['Anti-tip straps + felt pads', 25],
+      ['Curtain rod + brackets', 25],
+      ['Smoke / CO detector (Phase 6)', 43],
+      ['Wall outlets share (Phase 6)', 84],
+    ],
+    notes: 'Folding / panel door system $3,000 — Special Order, allocated to Phase 4 (shell), not included in this zone subtotal.'
+  },
+  living: {
+    name: 'Living Room',
+    tag: '🛋️ Living Zone',
+    desc: '13\'6" × 12\' · open to dining · folding partition to bedroom',
+    cost: 1850,
+    items: [
+      ['FRIHETEN sleeper sofa — Faringe', 899],
+      ['LACK coffee table — white oak', 30],
+      ['BESTÅ TV unit 47"', 75],
+      ['KALLAX 2×2 storage', 45],
+      ['LOHALS jute rug 5\'3 × 7\'7', 130],
+      ['VIDJA floor lamp — white', 70],
+      ['RITVA curtains + TRETUR blind combo', 105],
+      ['Smoke / CO detector — First Alert', 43],
+      ['Curtain rod + brackets', 25],
+      ['Felt pads + anti-tip straps', 25],
+      ['French door (Phase 4 · Special Order)', 0],
+      ['Living finish share (paint, drywall, flooring)', 403],
+    ],
+    notes: 'French door $1,500 — Special Order, allocated to Phase 4 shell. LVP flooring 350 sf is shared across the entire ADU.'
+  },
+  bathroom: {
+    name: 'Bathroom',
+    tag: '🚿 Bathroom Zone',
+    desc: '5\' × 7\' · tile shower 32×40 · tiled floor · 24" vanity',
+    cost: 2895,
+    items: [
+      ['Prefab shower base 32×40', 275],
+      ['Shower wall tile (ceramic subway 3×6, 62 sf)', 186],
+      ['Tile thinset + sanded grout (shower)', 90],
+      ['Schluter / tile trim edges', 35],
+      ['Shower trim kit + head', 130],
+      ['Shower rough-in valve body (Phase 5)', 70],
+      ['Shower drain assembly (Phase 5)', 30],
+      ['Bathroom floor tile (porcelain 12×12, 32 sf)', 128],
+      ['Floor thinset + grout + spacers', 55],
+      ['Cement board (floor underlay 32 sf)', 16],
+      ['Extra RedGard (floor + corners)', 30],
+      ['Toilet + supply line + wax ring + seat', 250],
+      ['Vanity 24" + top / sink + faucet', 450],
+      ['Bathroom mirror', 60],
+      ['Towel bar + TP holder + hooks', 60],
+      ['Bathroom exhaust fan 80 CFM', 100],
+      ['Fan duct + cap + clamps + foil tape', 40],
+      ['Shower curtain rod + curtain + hooks', 40],
+      ['Bathroom moisture paint (Phase 10)', 45],
+      ['Cement board + RedGard shower walls (Phase 9)', 130],
+      ['Bathroom GFCI outlet (Phase 6)', 18],
+      ['Vanity light (Phase 6)', 60],
+      ['Bathroom window + screen + sill', 250],
+      ['Silicone, drain, supply lines', 102],
+      ['Moisture-resistant drywall share', 60],
+    ],
+    notes: 'Shower walls and bathroom floor are now fully tiled (replacing prefab shower wall system). Includes Phase 13 fixtures + tile + Phase 5 plumbing + Phase 9 wet zone + Phase 10 moisture paint + Phase 6 electrical.'
+  },
+  closet: {
+    name: 'Walk-in Closet',
+    tag: '👔 Walk-in Closet',
+    desc: '6\' × 5\'6" · IKEA BOAXEL wall-mounted system',
+    cost: 637,
+    items: [
+      ['IKEA BOAXEL 49" wardrobe combo', 262],
+      ['Additional hanging rods', 10],
+      ['Additional shelves (×3)', 45],
+      ['Mesh basket drawers (×4)', 80],
+      ['Shoe storage', 30],
+      ['Wall mirror', 40],
+      ['BOAXEL wall rails (additional)', 40],
+      ['Second-wall BOAXEL add-on', 80],
+      ['Shelf / rod brackets', 5],
+      ['Mounting hardware (stud screws)', 15],
+      ['Sliding door (Phase 4 · cross-ref)', 0],
+      ['Motion sensor light (Phase 6 · cross-ref)', 0],
+    ],
+    notes: 'Sliding door $250 — in Phase 4. Closet motion light $30 — in Phase 6. This zone covers only the IKEA BOAXEL system + accessories.'
+  },
+  dining: {
+    name: 'Dining Area',
+    tag: '🍽️ Dining Zone',
+    desc: 'Integrated · 30–35" round table',
+    cost: 360,
+    items: [
+      ['IKEA KRAGSTA round dining table 35"', 130],
+      ['TEODORES dining chairs (×3)', 180],
+      ['IKEA FOTO pendant light', 50],
+      ['Pendant electrical box (Phase 6 · cross-ref)', 0],
+    ],
+    notes: 'Small dining nook between kitchen and living room. Pendant electrical infrastructure is in Phase 6.'
+  },
+  laundry: {
+    name: 'Laundry',
+    tag: '🧺 Laundry',
+    desc: 'In bathroom zone · stacked 24"',
+    cost: 2545,
+    items: [
+      ['Bosch compact washer 24" (Special Order)', 1000],
+      ['Bosch ventless dryer 24" (Special Order)', 1400],
+      ['Stacking kit', 90],
+      ['Washer supply hoses (pair)', 15],
+      ['Dryer power cord', 25],
+      ['Dryer condensate drain kit', 15],
+      ['Washer outlet box (Phase 5 · cross-ref)', 0],
+      ['Washer standpipe + drain pan (Phase 5 · cross-ref)', 0],
+    ],
+    notes: 'Bosch washer + dryer are Special Order with 4–6 week lead time. Ventless dryer is mandatory (no exterior vent). Washer outlet, standpipe, and drain pan are already in Phase 5.'
+  },
+  entry: {
+    name: 'Entry / Exit',
+    tag: '🚪 Entry',
+    desc: 'South-side main entry door',
+    cost: 700,
+    items: [
+      ['Main entry door — prehung steel 36"', 400],
+      ['Entry lockset + deadbolt', 200],
+      ['Weatherstripping + door sweep', 45],
+      ['Entry threshold (Phase 2 raised floor)', 25],
+      ['Exterior light (Phase 6 · cross-ref)', 30],
+    ],
+    notes: 'Entry door with brickmold. Hardware includes deadbolt + lockset + sweep. Exterior light is in Phase 6.'
+  }
+};
+
+const PHASES = [
+  {n: 1,  name: 'Site & Exterior Utilities', cost: 2566, items: 49, color: 'amber'},
+  {n: 2,  name: 'Raised Floor System',       cost: 2923, items: 22, color: 'amber'},
+  {n: 3,  name: 'Framing',                   cost: 1546, items: 23, color: 'amber'},
+  {n: 4,  name: 'Doors & Windows',           cost: 7925, items: 30, color: 'amber'},
+  {n: 5,  name: 'Plumbing Rough-in',         cost: 1490, items: 34, color: 'blue'},
+  {n: 6,  name: 'Electrical Rough-in',       cost: 3522, items: 37, color: 'blue'},
+  {n: 7,  name: 'HVAC Mini-Split',           cost: 3660, items: 24, color: 'blue'},
+  {n: 8,  name: 'Insulation',                cost: 1898, items: 16, color: 'orange'},
+  {n: 9,  name: 'Drywall',                   cost: 1923, items: 20, color: 'orange'},
+  {n: 10, name: 'Paint',                     cost:  998, items: 20, color: 'orange'},
+  {n: 11, name: 'Flooring & Trim',           cost: 1458, items: 14, color: 'orange'},
+  {n: 12, name: 'Kitchen Cabinets',          cost: 2890, items: 32, color: 'emerald'},
+  {n: 13, name: 'Bathroom Fixtures + Tile',  cost: 2021, items: 42, color: 'emerald'},
+  {n: 14, name: 'Closet System',             cost:  637, items: 17, color: 'emerald'},
+  {n: 15, name: 'Water Heater',              cost:  675, items: 17, color: 'emerald'},
+  {n: 16, name: 'Appliances',                cost: 4715, items: 17, color: 'emerald'},
+  {n: 17, name: 'Furniture (IKEA)',          cost: 2987, items: 27, color: 'emerald'},
+];
+
+// ========== RENDER PHASES ==========
+const phaseColors = {
+  amber:   {bg: 'bg-amber-50',   border: 'border-amber-200',   text: 'text-amber-700',   dot: 'bg-amber-500'},
+  blue:    {bg: 'bg-blue-50',    border: 'border-blue-200',    text: 'text-blue-700',    dot: 'bg-blue-500'},
+  orange:  {bg: 'bg-orange-50',  border: 'border-orange-200',  text: 'text-orange-700',  dot: 'bg-orange-500'},
+  emerald: {bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-700', dot: 'bg-emerald-500'},
+};
+
+const phasesGrid = document.getElementById('phases-grid');
+PHASES.forEach(p => {
+  const c = phaseColors[p.color];
+  const div = document.createElement('div');
+  div.className = `phase-card ${c.bg} ${c.border} border rounded-lg p-3`;
+  div.innerHTML = `
+    <div class="flex items-center justify-between mb-2">
+      <span class="text-[10px] font-bold ${c.text} uppercase tracking-wider">Phase ${p.n}</span>
+      <span class="w-2 h-2 rounded-full ${c.dot}"></span>
+    </div>
+    <div class="text-sm font-semibold text-gray-800 leading-tight mb-2">${p.name}</div>
+    <div class="text-lg font-bold mono ${c.text}">$${p.cost.toLocaleString()}</div>
+    <div class="text-[11px] text-gray-500 mt-1">${p.items} items</div>
+  `;
+  phasesGrid.appendChild(div);
+});
+
+// ========== INTERACTIVITY ==========
+const polygons = document.querySelectorAll('.zone-polygon');
+const emptyState = document.getElementById('empty-state');
+const zoneDetails = document.getElementById('zone-details');
+
+function showZone(zoneId) {
+  const z = ZONES[zoneId];
+  if (!z) return;
+
+  emptyState.classList.add('hidden');
+  zoneDetails.classList.remove('hidden');
+
+  document.getElementById('zone-tag').textContent = z.tag;
+  document.getElementById('zone-name').textContent = z.name;
+  document.getElementById('zone-desc').textContent = z.desc;
+  document.getElementById('zone-cost').textContent = '$' + z.cost.toLocaleString();
+  document.getElementById('zone-items-count').textContent = `${z.items.length} items`;
+  document.getElementById('zone-notes').textContent = z.notes;
+
+  const itemsContainer = document.getElementById('zone-items');
+  itemsContainer.innerHTML = '';
+  z.items.forEach(([name, cost]) => {
+    const row = document.createElement('div');
+    row.className = 'flex items-baseline justify-between text-sm gap-2 py-1 border-b border-gray-50';
+    row.innerHTML = `
+      <span class="text-gray-700 ${cost === 0 ? 'italic text-gray-400' : ''}">${name}</span>
+      <span class="font-medium text-gray-900 mono whitespace-nowrap ${cost === 0 ? 'text-gray-400' : ''}">
+        ${cost === 0 ? '—' : '$' + cost.toLocaleString()}
+      </span>
+    `;
+    itemsContainer.appendChild(row);
+  });
+
+  polygons.forEach(p => p.classList.remove('active'));
+  document.querySelectorAll(`[data-zone="${zoneId}"]`).forEach(p => p.classList.add('active'));
+}
+
+polygons.forEach(poly => {
+  poly.addEventListener('click', () => {
+    showZone(poly.getAttribute('data-zone'));
+  });
+});
+
+// Show Kitchen by default
+setTimeout(() => showZone('kitchen'), 200);
+
+// Toggle zones visibility
+const toggleBtn = document.getElementById('toggle-zones');
+let zonesVisible = true;
+toggleBtn.addEventListener('click', () => {
+  zonesVisible = !zonesVisible;
+  polygons.forEach(p => {
+    p.style.fill = zonesVisible ? '' : 'transparent';
+    p.style.stroke = zonesVisible ? '' : 'transparent';
+  });
+  document.querySelectorAll('.zone-label, .zone-cost').forEach(t => {
+    t.style.display = zonesVisible ? '' : 'none';
+  });
+  toggleBtn.innerHTML = zonesVisible ? 'Hide zones' : 'Show zones';
+});
+</script>
+
+</body>
+</html>

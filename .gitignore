@@ -1,0 +1,23 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Editor
+.vscode/
+.idea/
+*.swp
+
+# Backup / intermediate files
+*_backup.xlsx
+ADU_Materials_Estimate_v1_zones_backup.xlsx
+
+# Original Ukrainian PNG (заміщено adu_plan_en.svg)
+ChatGPT Image 23 трав. 2026 р., 12_43_00.png
+
+# Local logs
+.claude/logs/
